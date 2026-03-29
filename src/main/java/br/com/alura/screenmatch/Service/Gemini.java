@@ -2,11 +2,15 @@ package br.com.alura.screenmatch.Service;
 
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
+import io.github.cdimascio.dotenv.Dotenv;
+
 public class Gemini {
 
+
     public static String traduzirTexto(String texto) {
+        Dotenv dotenv = Dotenv.load();
         Client client = Client.builder()
-                .apiKey(System.getenv("GEMINI_API_KEY"))
+                .apiKey(dotenv.get("GEMINI_API_KEY"))
                 .build();
 
             GenerateContentResponse response = client.models.generateContent(
@@ -21,3 +25,4 @@ public class Gemini {
 
         }
     }
+
