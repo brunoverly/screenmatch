@@ -5,24 +5,23 @@ import br.com.alura.screenmatch.Service.ConsumoAPI;
 import br.com.alura.screenmatch.Service.ConverteDados;
 import br.com.alura.screenmatch.Service.Gemini;
 import br.com.alura.screenmatch.repository.SerieRepository;
-import ch.qos.logback.core.encoder.JsonEscapeUtil;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Service
 public class Principal {
-    Dotenv dotenv = Dotenv.load();
     private Scanner sc = new Scanner(System.in);
     private ConsumoAPI consumoApi = new ConsumoAPI();
     private ConverteDados conversor = new ConverteDados();
     private final String ENDERECO = "http://www.omdbapi.com/?t=";
-    private final String API_KEY = dotenv.get("OMDB_API_KEY");
+    @Value("${OMDB_API_KEY}")
+    private String API_KEY;
     private List<DadosSerie> dadosSeries = new ArrayList<>();
-    private Gemini gemini = new Gemini();
+    @Autowired
+    private Gemini gemini;
     private SerieRepository repositorio;
 
     private List<Serie> series = new ArrayList<>();
@@ -35,7 +34,8 @@ public class Principal {
 
 
     public void exibeMenu() {
-        var menu = """
+        System.out.println("===============================================================");
+        System.out.println("""
                 1 - Buscar séries
                 2 - Buscar episódios
                 3-  Listar séries buscadas
@@ -48,9 +48,9 @@ public class Principal {
                 10- Buscar top episódios por série
                 11- Buscar episódios por data
                 0 - Sair
-                """;
+                """);
+        System.out.println("===============================================================");
 
-        System.out.println(menu);
         var opcao = sc.nextInt();
         sc.nextLine();
 
@@ -107,6 +107,8 @@ public class Principal {
             List<Episodio> episodiosFiltrados = repositorio.episodioPorSerieAno(serieBuscada.get(), ano);
             episodiosFiltrados.forEach(System.out::println);
         }
+
+        exibeMenu();
     }
 
     private void buscarTopEpisodiosAvaliados() {
@@ -222,6 +224,7 @@ public class Principal {
     private void buscarSerieWeb() {
         DadosSerie dados = getDadosSerie();
         Serie serie = new Serie(dados);
+        serie.setSinopse(gemini.traduzirTexto(serie.getSinopse()));
         repositorio.save(serie);
         exibeMenu();
     }
@@ -230,6 +233,7 @@ public class Principal {
         System.out.println("Digite o nome da série para busca");
         var nomeSerie = sc.nextLine();
         var json = consumoApi.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
+        System.out.println(json);
         DadosSerie dados = conversor.obterDados(json, DadosSerie.class);
         return dados;
     }

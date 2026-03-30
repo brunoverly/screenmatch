@@ -2,15 +2,17 @@ package br.com.alura.screenmatch.Service;
 
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
-import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+@Service
 public class Gemini {
+    @Value("${GEMINI_API_KEY}")
+    private String API_KEY;
 
-
-    public static String traduzirTexto(String texto) {
-        Dotenv dotenv = Dotenv.load();
+    public String traduzirTexto(String texto) {
         Client client = Client.builder()
-                .apiKey(dotenv.get("GEMINI_API_KEY"))
+                .apiKey(API_KEY)
                 .build();
 
             GenerateContentResponse response = client.models.generateContent(

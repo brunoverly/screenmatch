@@ -1,7 +1,9 @@
 package br.com.alura.screenmatch.Model;
 
 import br.com.alura.screenmatch.Service.Gemini;
+import com.google.j2objc.annotations.AutoreleasePool;
 import jakarta.persistence.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,16 +29,17 @@ public class Serie {
     private List<Episodio> episodios = new ArrayList<>();
 
 
-
     public Serie(DadosSerie dadosSerie) {
         this.titulo = dadosSerie.titulo();
         this.totalTemporadas = dadosSerie.totalTemporadas();
-        this.avaliacao = OptionalDouble.of(Double.valueOf(dadosSerie.avaliacao())).orElse(0.0);
+        try {
+            this.avaliacao = OptionalDouble.of(Double.valueOf(dadosSerie.avaliacao())).orElse(0.0);
+        }catch(NullPointerException e){
+            this.avaliacao = 0.0;
+        }
         this.genero = Categoria.fromString(dadosSerie.genero().split(",")[0].trim());
         this.atores = dadosSerie.atores();
         this.poster = dadosSerie.poster();
-        this.sinopse = Gemini.traduzirTexto(dadosSerie.sinopse());
-
     }
 
     public Serie() {}
